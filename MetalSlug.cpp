@@ -37,7 +37,7 @@ struct Bullet {
 	Rectangle collider;
 	Texture2D texture;
 };
-
+// pushing
 void enemy_getsShot(Rectangle* collider1, Rectangle* collider2) {
 	if (CheckCollisionRecs(*collider1, *collider2)) {
 		//code for when the enemy gets shot
