@@ -62,7 +62,7 @@ void explosionCollision(Rectangle* collider1, Rectangle* collider2) {
 }
 
 
-const int screenWidth = 1200;
+const int screenWidth = 800;
 const int screenHeight = 800;
 int health = 100;
 
