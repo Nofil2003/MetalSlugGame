@@ -121,6 +121,7 @@ int main()
 			player.collider.y = (float)player.y;
 		}
 
+		// Sample.
 
 		if (player.x < screenWidth - MainPlayerTexture.width)
 			player.x = screenWidth - MainPlayerTexture.width;
