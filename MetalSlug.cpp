@@ -112,21 +112,26 @@ int main()
 		if (bg2 <= -screenWidth)
 			bg2 = screenWidth;
 		
-		if (IsKeyDown(KEY_LEFT)) {
-			player.x = max(0, player.x - static_cast<int>(playerSpeed * GetFrameTime()));
+		if (IsKeyDown(KEY_A)) {
+			player.x = player.x - 7;
+			player.collider.x = (float)player.x;
 		}
-		if (IsKeyDown(KEY_RIGHT)) {
-			player.x = min(screenWidth - MainPlayerTexture.width, player.x + static_cast<int>(playerSpeed * GetFrameTime()));
+		if (IsKeyDown(KEY_D)) {
+			player.x = player.x + 7;;
+			player.collider.y = (float)player.y;
 		}
 
 
-		if (player.x > screenWidth - MainPlayerTexture.width)
+		if (player.x < screenWidth - MainPlayerTexture.width)
 			player.x = screenWidth - MainPlayerTexture.width;
+		if (player.x > screenWidth  - 150)
+			player.x = screenWidth - 150 ;
+
+		
 
 
-
-		player.collider.x = player.x;
-		player.collider.y = player.y;
+		
+		
 
 		BeginDrawing();
 		ClearBackground(RAYWHITE);
