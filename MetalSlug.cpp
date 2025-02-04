@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <raylib.h>
 #include <iostream>
+
 using namespace std;
 
 const int screenWidth = 1200;
@@ -15,6 +16,57 @@ struct MainPlayer {
     Texture2D texture;
     float velocityY = 0;
 };
+
+struct Tank {
+    int x;
+    int y;
+    Rectangle collider;
+    Texture2D texture;
+};
+
+struct Tank_Bullet {
+    int x;
+    int y;
+    Rectangle collider;
+    Texture2D texture;
+};
+
+struct Enemy {
+    int x;
+    int y;
+    Rectangle collider;
+    Texture2D texture;
+};
+struct Bullet {
+    int x;
+    int y;
+    Rectangle collider;
+    Texture2D texture;
+};
+
+void enemy_getsShot(Rectangle* collider1, Rectangle* collider2) {
+    if (CheckCollisionRecs(*collider1, *collider2)) {
+        //code for when the enemy gets shot
+    }
+}
+
+void player_getsShot(Rectangle* collider1, Rectangle* collider2) {
+    if (CheckCollisionRecs(*collider1, *collider2)) {
+        //code for when the player gets shot
+    }
+}
+
+void player_Collision(Rectangle* collider1, Rectangle* collider2) {
+    if (CheckCollisionRecs(*collider1, *collider2)) {
+        //code for player collision
+    }
+}
+void explosion_Collision(Rectangle* collider1, Rectangle* collider2) {
+    if (CheckCollisionRecs(*collider1, *collider2)) {
+        //code for explosion
+    }
+}
+
 
 int main() {
     InitWindow(screenWidth, screenHeight, "Metal Slug Prototype");
@@ -44,7 +96,7 @@ int main() {
     };
 
     const float gravity = 0.5f;
-    const float jumpForce = -10.0f;
+    const float jumpForce = -12.5f;
     bool isJumping = false;
 
     while (!WindowShouldClose()) {
