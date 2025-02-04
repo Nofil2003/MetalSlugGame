@@ -62,7 +62,7 @@ void explosionCollision(Rectangle* collider1, Rectangle* collider2) {
 
 
 const int screenWidth = 1200;
-const int screenHeight = 800;
+const int screenHeight = 500;
 int health = 100;
 
 int main()
@@ -70,7 +70,13 @@ int main()
 	InitWindow(screenWidth, screenHeight, "Metal Slug Prototype");
 	SetTargetFPS(60);
 	Texture2D background1 = LoadTexture("bg1.png");
+	Texture2D background2 = LoadTexture("bg2.png");
 	Texture2D MainPlayerTexture = LoadTexture("player.png");
+
+	//changing background
+	float bg1 = 0;
+	float bg2 = screenWidth;
+	float bgSpeed = 500;
 	
 
 	if (background1.id == 0) cout << "Failed to load background texture!" << endl;
@@ -78,13 +84,33 @@ int main()
 	
 	if (MainPlayerTexture.id == 0) cout << "Failed to load player texture!" << endl;
 
+	const float scaleFactor = 0.1f;  // Adjust this factor to resize the player
+
 	MainPlayer player;
-	player.x = screenWidth / 2 - (MainPlayerTexture.width) / 2;
-	player.y = screenHeight- (MainPlayerTexture.height);
-	player.collider = { (float)player.x, (float)player.y, (float)MainPlayerTexture.width ,(float) MainPlayerTexture.height  };
+	player.x = screenWidth / 2 - (MainPlayerTexture.width * scaleFactor) / 2;
+	player.y = screenHeight - (MainPlayerTexture.height * scaleFactor);
+	player.collider = {
+		(float)player.x,
+		(float)player.y,
+		MainPlayerTexture.width * scaleFactor,
+		MainPlayerTexture.height * scaleFactor
+	};
+
 	const int playerSpeed = 600;
 
+
+
 	while (!WindowShouldClose()) {
+
+		//background shift
+		bg1 -= bgSpeed * GetFrameTime();
+		bg2 -= bgSpeed * GetFrameTime();
+
+
+		if (bg1 <= -screenWidth)
+			bg1 = screenWidth;
+		if (bg2 <= -screenWidth)
+			bg2 = screenWidth;
 		
 		if (IsKeyDown(KEY_LEFT)) {
 			player.x = max(0, player.x - static_cast<int>(playerSpeed * GetFrameTime()));
@@ -105,8 +131,10 @@ int main()
 		BeginDrawing();
 		ClearBackground(RAYWHITE);
 		//display
-		DrawTextureEx(background1, { 0, 0 }, 0.0f, (float)screenWidth / background1.width, WHITE);
-		DrawTexture(MainPlayerTexture, player.x, player.y, WHITE);
+		DrawTextureEx(background1, { bg1, 0 }, 0.0f, (float)screenWidth / background1.width, WHITE);
+		DrawTextureEx(background2, { bg2, 0 }, 0.0f, (float)screenWidth / background2.width, WHITE);
+		DrawTextureEx(MainPlayerTexture, { (float)player.x, (float)player.y }, 0.0f, scaleFactor, WHITE);
+
 		EndDrawing();
 	}
 	UnloadTexture(background1);
