@@ -72,19 +72,26 @@ int main()
 	SetTargetFPS(60);
 	Texture2D background1 = LoadTexture("bg1.png");
 	Texture2D MainPlayerTexture = LoadTexture("player.png");
+	
+
+	if (background1.id == 0) cout << "Failed to load background texture!" << endl;
+
+	
+	if (MainPlayerTexture.id == 0) cout << "Failed to load player texture!" << endl;
+
 	MainPlayer player;
 	player.x = screenWidth / 2 - (MainPlayerTexture.width) / 2;
 	player.y = screenHeight- (MainPlayerTexture.height);
 	player.collider = { (float)player.x, (float)player.y, (float)MainPlayerTexture.width ,(float) MainPlayerTexture.height  };
 	const int playerSpeed = 600;
 
-	while (!WindowShouldClose) {
+	while (!WindowShouldClose()) {
 		
 		if (IsKeyDown(KEY_LEFT)) {
-			player.x -= playerSpeed * GetFrameTime();
+			player.x = max(0, player.x - static_cast<int>(playerSpeed * GetFrameTime()));
 		}
 		if (IsKeyDown(KEY_RIGHT)) {
-			player.x += playerSpeed * GetFrameTime();
+			player.x = min(screenWidth - MainPlayerTexture.width, player.x + static_cast<int>(playerSpeed * GetFrameTime()));
 		}
 
 
@@ -94,6 +101,8 @@ int main()
 
 
 		player.collider.x = player.x;
+		player.collider.y = player.y;
+
 		BeginDrawing();
 		ClearBackground(RAYWHITE);
 		//display
@@ -101,6 +110,9 @@ int main()
 		DrawTexture(MainPlayerTexture, player.x, player.y, WHITE);
 		EndDrawing();
 	}
+	UnloadTexture(background1);
+	UnloadTexture(MainPlayerTexture);
+
 	CloseWindow();
 	//code for player health bar
 	return 0;
