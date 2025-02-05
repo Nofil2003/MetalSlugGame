@@ -12,7 +12,7 @@ int health = 100;
 struct MainPlayer {
     int x;
     int y;
-    Rectangle collider;
+    Rectangle collider;  
     Texture2D texture;
     float velocityY = 0;
 };
@@ -75,7 +75,7 @@ int main() {
     Texture2D background1 = LoadTexture("bg1.png");
     Texture2D background2 = LoadTexture("bg2.png");
     Texture2D MainPlayerTexture = LoadTexture("player.png");
-
+   
     float bg1 = 0;
     float bg2 = screenWidth;
     float bgSpeed = 500;
@@ -106,16 +106,16 @@ int main() {
         if (bg1 <= -screenWidth) bg1 = screenWidth;
         if (bg2 <= -screenWidth) bg2 = screenWidth;
 
-        if (IsKeyDown(KEY_A)) {
+        if (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT) ){
             player.x -= 7;
             player.collider.x = (float)player.x;
         }
-        if (IsKeyDown(KEY_D)) {
+        if (IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)) {
             player.x += 7;
             player.collider.x = (float)player.x;
         }
-
-        if (IsKeyPressed(KEY_SPACE) && !isJumping) {
+        
+        if ((IsKeyPressed(KEY_SPACE) && !isJumping) || (IsKeyPressed(KEY_W) && !isJumping)){
             player.velocityY = jumpForce;
             isJumping = true;
         }
