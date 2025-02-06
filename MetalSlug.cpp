@@ -77,6 +77,8 @@ int main() {
     Texture2D background2 = LoadTexture("bg2.png");
     Texture2D MainPlayerTexture = LoadTexture("player.png");
     Texture2D Startbg = LoadTexture("Start_Screen.png");
+    Texture Game_over = LoadTexture("Game_Over.png");
+    
     bullet_mp.bullet_texture = LoadTexture("bullet.png"); // loaded
     Music start_music;
     start_music = LoadMusicStream("start_audio.mp3");
@@ -86,7 +88,8 @@ int main() {
     float bg2 = screenWidth;
     float sbg = 0;
     float bgSpeed = 500;
-
+    Game_over.height = screenHeight;
+    Game_over.width = screenWidth;
     
     if (background1.id == 0) cout << "Failed to load background texture!" << endl;
     if (MainPlayerTexture.id == 0) cout << "Failed to load player texture!" << endl;
@@ -122,6 +125,7 @@ int main() {
                 0.0f,      // Rotation
                 WHITE
             );
+            DrawText("LEVEL 1", (screenWidth / 2) - 80, 0, 35, YELLOW);
             EndDrawing();
             bullet_mp.x = player.x + 75;
             bullet_mp.y = player.y + 70;
@@ -173,13 +177,27 @@ int main() {
 
             if (player.x < 0) player.x = 0;
             if (player.x > screenWidth - 150) player.x = screenWidth - 150;
+            
+            
             bullet_mp.bullet_texture.height = 100;
             bullet_mp.bullet_texture.width = 100;
+            
             BeginDrawing();
             ClearBackground(RAYWHITE);
             DrawTextureEx(background1, { bg1, 0 }, 0.0f, (float)screenWidth / background1.width, WHITE);
             DrawTextureEx(background2, { bg2, 0 }, 0.0f, (float)screenWidth / background2.width, WHITE);
             DrawTextureEx(MainPlayerTexture, { (float)player.x, (float)player.y }, 0.0f, scaleFactor, WHITE);
+            
+            if (health == 0) // END GAME
+            {
+                DrawTexture(Game_over, 0, 0, WHITE);
+                DrawText("PRESS ESCAPE TO LEAVE", screenWidth / 2 - 200 , 0, 35, RED);
+                if (IsKeyPressed(KEY_ESCAPE))
+                {
+                    EndDrawing();
+                    break;
+                }
+            }
             
             EndDrawing();
         }
