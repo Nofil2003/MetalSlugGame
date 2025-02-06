@@ -17,6 +17,13 @@ struct MainPlayer {
     float velocityY = 0;
 };
 
+struct tank {
+    int x;
+    int y;
+    Rectangle collider;
+    Texture2D texture;
+};
+
 void player_movement(MainPlayer& player, float scaleFactor, bool& isJumping, float jumpForce, float gravity) {
     if (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)) {
         player.x -= 7;
@@ -47,6 +54,14 @@ void player_movement(MainPlayer& player, float scaleFactor, bool& isJumping, flo
     if (player.x > screenWidth - 150) player.x = screenWidth - 150;
 }
 
+void tank_movement() {
+
+
+
+}
+
+
+
 int main() {
     InitWindow(screenWidth, screenHeight, "Metal Slug Prototype");
     SetTargetFPS(60);
@@ -54,7 +69,7 @@ int main() {
     Texture2D background1 = LoadTexture("bg1.png");
     Texture2D background2 = LoadTexture("bg2.png");
     Texture2D MainPlayerTexture = LoadTexture("player.png");
-
+    Texture2D Tanktexture = LoadTexture("tank.png");
     float bg1 = 0;
     float bg2 = screenWidth;
     float bgSpeed = 500;
@@ -78,6 +93,17 @@ int main() {
     };
     player.texture = MainPlayerTexture;
 
+    tank Tank;
+    Tank.x=screenWidth-(Tanktexture.width*scaleFactor);
+    Tank.y=screenHeight-(Tanktexture.height*scaleFactor);
+    Tank.collider={
+        (float)Tank.x,
+        (float)Tank.y ,
+        Tanktexture.width*scaleFactor,
+        Tanktexture.height*scaleFactor 
+     };
+    Tank.texture = Tanktexture;
+
     while (!WindowShouldClose()) {
         bg1 -= bgSpeed * GetFrameTime();
         bg2 -= bgSpeed * GetFrameTime();
@@ -88,10 +114,12 @@ int main() {
         player_movement(player, scaleFactor, isJumping, jumpForce, gravity);
 
         BeginDrawing();
+
         ClearBackground(RAYWHITE);
         DrawTextureEx(background1, { bg1, 0 }, 0.0f, (float)screenWidth / background1.width, WHITE);
         DrawTextureEx(background2, { bg2, 0 }, 0.0f, (float)screenWidth / background2.width, WHITE);
         DrawTextureEx(player.texture, { (float)player.x, (float)player.y }, 0.0f, scaleFactor, WHITE);
+        DrawTextureEx(Tank.texture, { (float)Tank.x, (float)Tank.y }, 0.0f, scaleFactor, WHITE);
         EndDrawing();
     }
 
