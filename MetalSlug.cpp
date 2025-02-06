@@ -24,6 +24,18 @@ struct Tank {
     Texture2D texture;
 };
 
+struct Bullet {
+    Vector2 position;
+    float speed;
+    bool active;
+};
+
+struct Rocket {
+    Vector2 position;
+    float speed;
+    bool active;
+};
+
 void player_movement(MainPlayer& player, float scaleFactor, bool& isJumping, float jumpForce, float gravity) {
     if (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)) {
         player.x -= 7;
@@ -57,14 +69,16 @@ void player_movement(MainPlayer& player, float scaleFactor, bool& isJumping, flo
 void tank_movement(Tank& tank) {
     tank.x -= 5;
     if (tank.x < -tank.texture.width) {
-        tank.x = screenWidth;  // Reset position when off-screen
+        tank.x = screenWidth;
     }
 }
 
 int main() {
     InitWindow(screenWidth, screenHeight, "Metal Slug Prototype");
     SetTargetFPS(60);
+    srand(time(0));
 
+    
     Texture2D background1 = LoadTexture("bg1.png");
     Texture2D background2 = LoadTexture("bg2.png");
     Texture2D MainPlayerTexture = LoadTexture("player.png");
@@ -76,13 +90,8 @@ int main() {
         return -1;
     }
 
-    float bg1 = 0;
-    float bg2 = screenWidth;
-    float bgSpeed = 500;
-
-    const float scaleFactor = 0.1f;
-    const float gravity = 0.5f;
-    const float jumpForce = -12.5f;
+    float bg1 = 0, bg2 = screenWidth, bgSpeed = 500;
+    const float scaleFactor = 0.1f, gravity = 0.5f, jumpForce = -12.5f;
     bool isJumping = false;
 
     MainPlayer player;
@@ -97,8 +106,18 @@ int main() {
     tank.texture = TankTexture;
     tank.collider = { (float)tank.x, (float)tank.y, TankTexture.width * scaleFactor, TankTexture.height * scaleFactor };
 
+    
+    Bullet bullet = { {0, 0}, 5.0f, false };
+
+    
+    Rocket rocket = { {0, 0}, 4.0f, false };
+    float lastRocketTime = 0.0f;
+    float rocketSpawnInterval = 2.5f; 
+
     bool startScreen = true;
     while (!WindowShouldClose()) {
+        float currentTime = GetTime(); 
+
         if (startScreen) {
             BeginDrawing();
             ClearBackground(RAYWHITE);
@@ -107,6 +126,7 @@ int main() {
             if (IsKeyPressed(KEY_ENTER)) startScreen = false;
         }
         else {
+            
             bg1 -= bgSpeed * GetFrameTime();
             bg2 -= bgSpeed * GetFrameTime();
 
@@ -116,12 +136,52 @@ int main() {
             player_movement(player, scaleFactor, isJumping, jumpForce, gravity);
             tank_movement(tank);
 
+            
+            if (IsKeyPressed(KEY_F) && !bullet.active) {
+                bullet.active = true;
+                bullet.position.x = player.x + player.collider.width;
+                bullet.position.y = player.y + (player.collider.height / 2);
+            }
+
+            if (bullet.active) {
+                bullet.position.x += bullet.speed;
+                if (bullet.position.x > screenWidth) bullet.active = false;
+            }
+
+           
+            if (!rocket.active && (currentTime - lastRocketTime) >= rocketSpawnInterval) {
+                rocket.active = true;
+                lastRocketTime = currentTime;
+
+                
+                int heightOffset = rand() % 30 - 15; 
+                rocket.position.x = tank.x;
+                rocket.position.y = tank.y + (tank.collider.height / 2) + heightOffset;
+            }
+
+            if (rocket.active) {
+                rocket.position.x -= rocket.speed;
+                if (rocket.position.x < 0) rocket.active = false;
+            }
+
+            
             BeginDrawing();
             ClearBackground(RAYWHITE);
+
+            
             DrawTextureEx(background1, { bg1, 0 }, 0.0f, (float)screenWidth / background1.width, WHITE);
             DrawTextureEx(background2, { bg2, 0 }, 0.0f, (float)screenWidth / background2.width, WHITE);
+
+            
             DrawTextureEx(MainPlayerTexture, { (float)player.x, (float)player.y }, 0.0f, scaleFactor, WHITE);
             DrawTextureEx(TankTexture, { (float)tank.x, (float)tank.y }, 0.0f, scaleFactor, WHITE);
+
+           
+            if (bullet.active) DrawCircleV(bullet.position, 5, RED);
+
+            
+            if (rocket.active) DrawCircleV(rocket.position, 10, BLACK);
+
             EndDrawing();
         }
     }
