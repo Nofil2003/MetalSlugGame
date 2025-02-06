@@ -99,19 +99,36 @@ int main() {
         MainPlayerTexture.height * scaleFactor
     }; 
     
-    const float gravity = 0.5f;
+    const float gravity = 0.7f;
     const float jumpForce = -12.5f;
     bool isJumping = false;
     
 
+    bool startScreen = true;
+
     while (!WindowShouldClose()) {
-        
-        //if (IsKeyPressed(KEY_ENTER))
-        //{
-  //          UnloadTexture(Startbg);
+        if (startScreen) {
+            BeginDrawing();
+            ClearBackground(RAYWHITE);
+            DrawTexturePro(
+                Startbg,
+                { 0, 0, (float)Startbg.width, (float)Startbg.height },  // Source rectangle
+                { 0, 0, (float)screenWidth, (float)screenHeight },      // Destination rectangle
+                { 0, 0 },  // Origin
+                0.0f,      // Rotation
+                WHITE
+            );
+     
+            EndDrawing();
+
+            if (IsKeyPressed(KEY_ENTER)) {
+                startScreen = false;
+            }
+        }
+        else 
+        {
             bg1 -= bgSpeed * GetFrameTime();
             bg2 -= bgSpeed * GetFrameTime();
-
 
             if (bg1 <= -screenWidth) bg1 = screenWidth;
             if (bg2 <= -screenWidth) bg2 = screenWidth;
@@ -128,9 +145,6 @@ int main() {
             if ((IsKeyPressed(KEY_SPACE) && !isJumping) || (IsKeyPressed(KEY_W) && !isJumping)) {
                 player.velocityY = jumpForce;
                 isJumping = true;
-            }
-            if (IsKeyPressed(MOUSE_BUTTON_LEFT)) {
-                Texture2D mp_bullet = LoadTexture("bullet.png");
             }
 
             player.velocityY += gravity;
@@ -152,11 +166,8 @@ int main() {
             DrawTextureEx(background1, { bg1, 0 }, 0.0f, (float)screenWidth / background1.width, WHITE);
             DrawTextureEx(background2, { bg2, 0 }, 0.0f, (float)screenWidth / background2.width, WHITE);
             DrawTextureEx(MainPlayerTexture, { (float)player.x, (float)player.y }, 0.0f, scaleFactor, WHITE);
-            // DrawTextureEx(bullet_mp.bullet_texture, { (float)bullet_mp.x, (float)bullet_mp.y }, 0.0f, 0.05f, ORANGE);
-            DrawTextureEx(Startbg, { sbg, 0 }, 0.0f, (float)screenWidth / Startbg.width, BLACK);
             EndDrawing();
-        //}
-        
+        }
     }
     UnloadTexture(Startbg);
     UnloadTexture(background1);
