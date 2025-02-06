@@ -75,10 +75,12 @@ int main() {
     Texture2D background1 = LoadTexture("bg1.png");
     Texture2D background2 = LoadTexture("bg2.png");
     Texture2D MainPlayerTexture = LoadTexture("player.png");
+    Texture2D Startbg = LoadTexture("Start_Screen.png");
     bullet_mp.bullet_texture = LoadTexture("bullet.png");
    
     float bg1 = 0;
     float bg2 = screenWidth;
+    float sbg = 0;
     float bgSpeed = 500;
 
     
@@ -100,56 +102,63 @@ int main() {
     const float gravity = 0.5f;
     const float jumpForce = -12.5f;
     bool isJumping = false;
+    
 
     while (!WindowShouldClose()) {
-        bg1 -= bgSpeed * GetFrameTime();
-        bg2 -= bgSpeed * GetFrameTime();
         
+        //if (IsKeyPressed(KEY_ENTER))
+        //{
+  //          UnloadTexture(Startbg);
+            bg1 -= bgSpeed * GetFrameTime();
+            bg2 -= bgSpeed * GetFrameTime();
 
-        if (bg1 <= -screenWidth) bg1 = screenWidth;
-        if (bg2 <= -screenWidth) bg2 = screenWidth;
 
-        if (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT) ){
-            player.x -= 7;
-            player.collider.x = (float)player.x;
-        }
-        if (IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)) {
-            player.x += 7;
-            player.collider.x = (float)player.x;
-        }
+            if (bg1 <= -screenWidth) bg1 = screenWidth;
+            if (bg2 <= -screenWidth) bg2 = screenWidth;
+
+            if (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)) {
+                player.x -= 7;
+                player.collider.x = (float)player.x;
+            }
+            if (IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)) {
+                player.x += 7;
+                player.collider.x = (float)player.x;
+            }
+
+            if ((IsKeyPressed(KEY_SPACE) && !isJumping) || (IsKeyPressed(KEY_W) && !isJumping)) {
+                player.velocityY = jumpForce;
+                isJumping = true;
+            }
+            if (IsKeyPressed(MOUSE_BUTTON_LEFT)) {
+                Texture2D mp_bullet = LoadTexture("bullet.png");
+            }
+
+            player.velocityY += gravity;
+            player.y += player.velocityY;
+            player.collider.y = (float)player.y;
+
+            float groundY = screenHeight - (MainPlayerTexture.height * scaleFactor);
+            if (player.y > groundY) {
+                player.y = groundY;
+                player.velocityY = 0;
+                isJumping = false;
+            }
+
+            if (player.x < 0) player.x = 0;
+            if (player.x > screenWidth - 150) player.x = screenWidth - 150;
+
+            BeginDrawing();
+            ClearBackground(RAYWHITE);
+            DrawTextureEx(background1, { bg1, 0 }, 0.0f, (float)screenWidth / background1.width, WHITE);
+            DrawTextureEx(background2, { bg2, 0 }, 0.0f, (float)screenWidth / background2.width, WHITE);
+            DrawTextureEx(MainPlayerTexture, { (float)player.x, (float)player.y }, 0.0f, scaleFactor, WHITE);
+            // DrawTextureEx(bullet_mp.bullet_texture, { (float)bullet_mp.x, (float)bullet_mp.y }, 0.0f, 0.05f, ORANGE);
+            DrawTextureEx(Startbg, { sbg, 0 }, 0.0f, (float)screenWidth / Startbg.width, BLACK);
+            EndDrawing();
+        //}
         
-        if ((IsKeyPressed(KEY_SPACE) && !isJumping) || (IsKeyPressed(KEY_W) && !isJumping)){
-            player.velocityY = jumpForce;
-            isJumping = true;
-        }
-        if (IsKeyPressed(MOUSE_BUTTON_LEFT)) {
-            Texture2D mp_bullet = LoadTexture("bullet.png");
-        }
-
-        player.velocityY += gravity;
-        player.y += player.velocityY;
-        player.collider.y = (float)player.y;
-
-        float groundY = screenHeight - (MainPlayerTexture.height * scaleFactor);
-        if (player.y > groundY) {
-            player.y = groundY;
-            player.velocityY = 0;
-            isJumping = false;
-        }
-
-        if (player.x < 0) player.x = 0;
-        if (player.x > screenWidth - 150) player.x = screenWidth - 150;
-
-        BeginDrawing();
-        ClearBackground(RAYWHITE);
-        DrawTextureEx(background1, { bg1, 0 }, 0.0f, (float)screenWidth / background1.width, WHITE);
-        DrawTextureEx(background2, { bg2, 0 }, 0.0f, (float)screenWidth / background2.width, WHITE);
-        DrawTextureEx(MainPlayerTexture, { (float)player.x, (float)player.y }, 0.0f, scaleFactor, WHITE);
-        DrawTextureEx(bullet_mp.bullet_texture, { (float)bullet_mp.x, (float)bullet_mp.y }, 0.0f, 0.05f, ORANGE);
-
-        EndDrawing();
     }
-
+    UnloadTexture(Startbg);
     UnloadTexture(background1);
     UnloadTexture(MainPlayerTexture);
     CloseWindow();
