@@ -36,6 +36,131 @@ struct Rocket {
     bool active;
 };
 
+const int MAX_BULLETS = 10;
+const int MAX_ROCKETS = 5;
+
+
+Bullet* bullets = new Bullet[MAX_BULLETS];
+Rocket* rockets = new Rocket[MAX_ROCKETS];
+
+
+void initBullets() {
+    for (int i = 0; i < MAX_BULLETS; i++) {
+        bullets[i] = { {0, 0}, 5.0f, false };
+    }
+}
+
+
+void initRockets() {
+    for (int i = 0; i < MAX_ROCKETS; i++) {
+        rockets[i] = { {0, 0}, 4.0f, false };
+    }
+}
+void shootBullet(MainPlayer* player) {
+    for (int i = 0; i < MAX_BULLETS; i++) {
+        if (!bullets[i].active) {
+            bullets[i].active = true;
+            bullets[i].position.x = player->x + player->collider.width;
+            bullets[i].position.y = player->y + (player->collider.height / 2);
+            break;
+        }
+    }
+}
+
+
+void launchRocket(Tank* tank, float currentTime, float* lastRocketTime) {
+    if (currentTime - *lastRocketTime >= 2.5f) {
+        *lastRocketTime = currentTime;
+        for (int i = 0; i < MAX_ROCKETS; i++) {
+            if (!rockets[i].active) {
+                rockets[i].active = true;
+                int heightOffset = rand() % 30 - 15;
+                rockets[i].position.x = tank->x;
+                rockets[i].position.y = tank->y + (tank->collider.height / 2) + heightOffset;
+                break;
+            }
+        }
+    }
+}
+
+
+void updateBullets() {
+    for (int i = 0; i < MAX_BULLETS; i++) {
+        if (bullets[i].active) {
+            bullets[i].position.x += bullets[i].speed;
+            if (bullets[i].position.x > screenWidth) 
+                bullets[i].active = false;
+        }
+    }
+}
+
+void updateRockets() {
+    for (int i = 0; i < MAX_ROCKETS; i++) {
+        if (rockets[i].active) {
+            rockets[i].position.x -= rockets[i].speed;
+            if (rockets[i].position.x < 0)
+                rockets[i].active = false;
+        }
+    }
+}
+
+
+void drawBullets() {
+    for (int i = 0; i < MAX_BULLETS; i++) {
+        if (bullets[i].active)
+            DrawCircleV(bullets[i].position, 5, RED);
+    }
+}
+
+void drawRockets() {
+    for (int i = 0; i < MAX_ROCKETS; i++) {
+        if (rockets[i].active)
+            DrawCircleV(rockets[i].position, 10, BLACK);
+    }
+}
+
+
+
+
+//struct Chopper {
+//    Texture2D texture;
+//    Vector2 position;
+//    int frameCount;
+//    int currentFrame;
+//    float frameSpeed;
+//    float frameTimer;
+//
+//
+//    void InitChopper(const char* filePath, Vector2 pos, int frames, float speed) {
+//        texture = LoadTexture(filePath);
+//        position = pos;
+//        frameCount = frames;
+//        currentFrame = 0;
+//        frameSpeed = speed;
+//        frameTimer = 0.0f;
+//    }
+//
+//
+//    void UpdateChopper() {
+//        frameTimer += GetFrameTime();
+//        if (frameTimer >= frameSpeed) {
+//            frameTimer = 0.0f;
+//            currentFrame = (currentFrame + 1) % frameCount;
+//        }
+//    }
+//
+//
+//    void DrawChopper() {
+//        int frameWidth = texture.width / frameCount;
+//        int frameHeight = texture.height;
+//
+//        Rectangle sourceRect = { currentFrame * frameWidth, 0, frameWidth, frameHeight };
+//        Rectangle destRect = { position.x, position.y, frameWidth * 2, frameHeight * 2 }; // Scale the size
+//        DrawTexturePro(texture, sourceRect, destRect, { 0, 0 }, 0.0f, WHITE);
+//    }
+//}
+
+
 void player_movement(MainPlayer& player, float scaleFactor, bool& isJumping, float jumpForce, float gravity) {
     if (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)) {
         player.x -= 7;
@@ -73,17 +198,25 @@ void tank_movement(Tank& tank) {
     }
 }
 
+
+
+
+
 int main() {
     InitWindow(screenWidth, screenHeight, "Metal Slug Prototype");
     SetTargetFPS(60);
     srand(time(0));
-
-    
+   /* Chopper helicopter;*/
+    /*helicopter.InitChopper("helicopter.png", { screenWidth / 2.0f, screenHeight / 4.0f }, 4, 0.1f);*/
     Texture2D background1 = LoadTexture("bg1.png");
     Texture2D background2 = LoadTexture("bg2.png");
     Texture2D MainPlayerTexture = LoadTexture("player.png");
     Texture2D Startbg = LoadTexture("Start_Screen.png");
     Texture2D TankTexture = LoadTexture("tank.png");
+    Music start_music;
+    start_music = LoadMusicStream("start_audio.mp3");
+    Sound jump = LoadSound("jump.mp3");
+    Music ingame = LoadMusicStream("Ingame.mp3");
 
     if (background1.id == 0 || background2.id == 0 || MainPlayerTexture.id == 0 || Startbg.id == 0 || TankTexture.id == 0) {
         cout << "Failed to load one or more textures!" << endl;
@@ -106,27 +239,26 @@ int main() {
     tank.texture = TankTexture;
     tank.collider = { (float)tank.x, (float)tank.y, TankTexture.width * scaleFactor, TankTexture.height * scaleFactor };
 
-    
-    Bullet bullet = { {0, 0}, 5.0f, false };
+    initBullets();
+    initRockets();
 
-    
-    Rocket rocket = { {0, 0}, 4.0f, false };
     float lastRocketTime = 0.0f;
-    float rocketSpawnInterval = 2.5f; 
+    float rocketSpawnInterval = 2.5f;
 
     bool startScreen = true;
     while (!WindowShouldClose()) {
-        float currentTime = GetTime(); 
+        float currentTime = GetTime();
 
         if (startScreen) {
             BeginDrawing();
             ClearBackground(RAYWHITE);
             DrawTexturePro(Startbg, { 0, 0, (float)Startbg.width, (float)Startbg.height }, { 0, 0, (float)screenWidth, (float)screenHeight }, { 0, 0 }, 0.0f, WHITE);
             EndDrawing();
-            if (IsKeyPressed(KEY_ENTER)) startScreen = false;
+            if (IsKeyPressed(KEY_ENTER)) 
+                startScreen = false;
         }
         else {
-            
+
             bg1 -= bgSpeed * GetFrameTime();
             bg2 -= bgSpeed * GetFrameTime();
 
@@ -136,54 +268,42 @@ int main() {
             player_movement(player, scaleFactor, isJumping, jumpForce, gravity);
             tank_movement(tank);
 
-            
-            if (IsKeyPressed(KEY_F) && !bullet.active) {
-                bullet.active = true;
-                bullet.position.x = player.x + player.collider.width;
-                bullet.position.y = player.y + (player.collider.height / 2);
+           /* frameTimer += GetFrameTime();
+            if (frameTimer >= frameSpeed) {
+                frameTimer = 0.0f;
+                currentFrame = (currentFrame + 1) % frameCount;
+            }*/
+
+            if (IsKeyPressed(KEY_F)) {
+                shootBullet(&player);
             }
+            launchRocket(&tank, currentTime, &lastRocketTime);
 
-            if (bullet.active) {
-                bullet.position.x += bullet.speed;
-                if (bullet.position.x > screenWidth) bullet.active = false;
-            }
 
-           
-            if (!rocket.active && (currentTime - lastRocketTime) >= rocketSpawnInterval) {
-                rocket.active = true;
-                lastRocketTime = currentTime;
+            updateBullets();
+            updateRockets();
 
-                
-                int heightOffset = rand() % 30 - 15; 
-                rocket.position.x = tank.x;
-                rocket.position.y = tank.y + (tank.collider.height / 2) + heightOffset;
-            }
 
-            if (rocket.active) {
-                rocket.position.x -= rocket.speed;
-                if (rocket.position.x < 0) rocket.active = false;
-            }
 
-            
+
+
+
             BeginDrawing();
             ClearBackground(RAYWHITE);
 
-            
+
             DrawTextureEx(background1, { bg1, 0 }, 0.0f, (float)screenWidth / background1.width, WHITE);
             DrawTextureEx(background2, { bg2, 0 }, 0.0f, (float)screenWidth / background2.width, WHITE);
 
-            
             DrawTextureEx(MainPlayerTexture, { (float)player.x, (float)player.y }, 0.0f, scaleFactor, WHITE);
             DrawTextureEx(TankTexture, { (float)tank.x, (float)tank.y }, 0.0f, scaleFactor, WHITE);
+            drawBullets();
+            drawRockets();
 
-           
-            if (bullet.active) DrawCircleV(bullet.position, 5, RED);
-
-            
-            if (rocket.active) DrawCircleV(rocket.position, 10, BLACK);
 
             EndDrawing();
         }
+    
     }
 
     UnloadTexture(Startbg);
