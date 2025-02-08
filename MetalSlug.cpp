@@ -3,8 +3,8 @@
 #include <raylib.h>
 #include <iostream>
 
-using namespace std;
 
+using namespace std;
 const int screenWidth = 1200;
 const int screenHeight = 500;
 int health = 100;
@@ -22,6 +22,8 @@ struct Tank {
     int y;
     Rectangle collider;
     Texture2D texture;
+    bool active;
+
 };
 
 struct Bullet {
@@ -119,7 +121,26 @@ void drawRockets() {
     }
 }
 
+void checkBulletCollisions(MainPlayer& player, Tank& tank) {
+    for (int i = 0; i < MAX_BULLETS; i++) {
+        if (bullets[i].active && tank.active) {
+            if (CheckCollisionPointRec(bullets[i].position, tank.collider)) {
+                bullets[i].active = false;
+                tank.active = false;
+            }
+        }
+    }
+}
 
+void checkRocketPlayerCollision(MainPlayer& player) {
+    for (int i = 0; i < MAX_ROCKETS; i++) {
+        if (rockets[i].active && CheckCollisionPointRec(rockets[i].position, player.collider)) {
+            rockets[i].active = false;
+            health -= 20;  
+            if (health < 0) health = 0;
+        }
+    }
+}
 
 
 //struct Chopper {
@@ -193,11 +214,32 @@ void player_movement(MainPlayer& player, float scaleFactor, bool& isJumping, flo
 
 void tank_movement(Tank& tank) {
     tank.x -= 5;
+    tank.collider.x = (float)tank.x;
     if (tank.x < -tank.texture.width) {
         tank.x = screenWidth;
+        tank.collider.x = (float)tank.x;
+        tank.active = true;  
     }
 }
 
+void drawHealthBar() {
+    float barWidth = 200 * (health / 100.0f);
+    DrawRectangle(20, 20, 200, 20, GRAY);
+    DrawRectangle(20, 20, barWidth, 20, RED);
+    DrawRectangleLines(20, 20, 200, 20, BLACK);
+}
+
+void checkCollision(MainPlayer& player, Tank& tank) {
+    if (tank.active && CheckCollisionRecs(player.collider, tank.collider)) {
+        if (player.y + player.collider.height < tank.y + 10) {
+            tank.active = false;
+        }
+        else {
+            health -= 20;
+            if (health < 0) health = 0;
+        }
+    }
+}
 
 
 
@@ -238,6 +280,7 @@ int main() {
     tank.y = screenHeight - (TankTexture.height * scaleFactor);
     tank.texture = TankTexture;
     tank.collider = { (float)tank.x, (float)tank.y, TankTexture.width * scaleFactor, TankTexture.height * scaleFactor };
+    tank.active = true;
 
     initBullets();
     initRockets();
@@ -265,8 +308,14 @@ int main() {
             if (bg1 <= -screenWidth) bg1 = screenWidth;
             if (bg2 <= -screenWidth) bg2 = screenWidth;
 
+            player.y += player.velocityY;
+            player.collider.y = player.y;
+
             player_movement(player, scaleFactor, isJumping, jumpForce, gravity);
             tank_movement(tank);
+            checkCollision(player, tank);
+            checkBulletCollisions(player, tank);
+            checkRocketPlayerCollision(player);
 
            /* frameTimer += GetFrameTime();
             if (frameTimer >= frameSpeed) {
@@ -284,21 +333,20 @@ int main() {
             updateRockets();
 
 
-
-
-
-
             BeginDrawing();
             ClearBackground(RAYWHITE);
 
-
+           
             DrawTextureEx(background1, { bg1, 0 }, 0.0f, (float)screenWidth / background1.width, WHITE);
             DrawTextureEx(background2, { bg2, 0 }, 0.0f, (float)screenWidth / background2.width, WHITE);
 
             DrawTextureEx(MainPlayerTexture, { (float)player.x, (float)player.y }, 0.0f, scaleFactor, WHITE);
-            DrawTextureEx(TankTexture, { (float)tank.x, (float)tank.y }, 0.0f, scaleFactor, WHITE);
+            if (tank.active) {  
+                DrawTextureEx(TankTexture, { (float)tank.x, (float)tank.y }, 0.0f, scaleFactor, WHITE);
+            }
             drawBullets();
             drawRockets();
+            drawHealthBar();
 
 
             EndDrawing();
